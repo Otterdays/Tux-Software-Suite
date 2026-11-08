@@ -6,12 +6,12 @@ Some tools (Antigravity app and IDE, Trae, Qoder IDE, Z Code) have no stable scr
 
 ## Install (for users)
 
-Download `tux-software-suite_1.13.0_all.deb` and double-click it. It opens in App Center, where you click **Install**. Then open **Tux Software Suite** from the app menu.
+Download `tux-software-suite_1.14.0_all.deb` and double-click it. It opens in App Center, where you click **Install**. Then open **Tux Software Suite** from the app menu.
 
 From a terminal:
 
 ```bash
-sudo apt install ./tux-software-suite_1.13.0_all.deb
+sudo apt install ./tux-software-suite_1.14.0_all.deb
 ```
 
 Uninstall with `sudo apt remove tux-software-suite`.

@@ -2,7 +2,7 @@
 # Builds dist/tux-software-suite_<version>_all.deb, a package Ubuntu/Debian users can double-click to install.
 set -euo pipefail
 
-VERSION="1.13.0"
+VERSION="1.14.0"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT

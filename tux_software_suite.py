@@ -383,6 +383,34 @@ def is_installed(check):
 VERSION_ARGS = {"go": ["version"], "javac": ["-version"]}
 
 
+# Command-line tools worth opening in a terminal window; the rest (git, cargo…) do nothing on their own.
+OPEN_IN_TERMINAL = {"Claude Code", "Codex CLI", "OpenCode", "Devin CLI", "Qoder CLI", "MiniMax Code",
+                    "Antigravity CLI", "DeepSeek Harness", "Neovim", "lazygit"}
+# Terminal emulators and the flag that makes them run a command, in order of preference.
+TERMINALS = [("ghostty", "-e"), ("gnome-terminal", "--"), ("ptyxis", "-x"), ("kgx", "-e"),
+             ("konsole", "-e"), ("x-terminal-emulator", "-e")]
+
+
+def tool_path():
+    return os.environ.get("PATH", "") + ":" + ":".join(EXTRA_PATHS)
+
+
+def launch_command(pkg):
+    """argv that opens an installed package: the app itself, or a terminal running the tool. None if not openable."""
+    name, kind, _, check, _, cmd = pkg
+    if " " in check or (kind not in ("App", "IDE") and name not in OPEN_IN_TERMINAL):
+        return None
+    exe = next(filter(None, (shutil.which(c, path=tool_path()) for c in check.split("|"))), None)
+    if not exe:
+        return None
+    if kind in ("App", "IDE"):
+        return [exe]
+    for term, flag in TERMINALS:
+        if term_exe := shutil.which(term, path=tool_path()):
+            return [term_exe, flag, "bash", "-c", f'"$0"; exec bash', exe]
+    return None
+
+
 def installed_version(pkg):
     """Version number of an installed command-line tool, or None. Apps are skipped so no window opens."""
     name, kind, _, check, _, cmd = pkg
@@ -490,6 +518,7 @@ class TuxSoftwareSuite(Gtk.ApplicationWindow):
         self.set_icon_name("tux-software-suite")
         self.busy = False
         self.rows = []
+        self.openers = {}
         self.headers = []
 
         grid = Gtk.Grid(column_spacing=12, row_spacing=6)
@@ -628,7 +657,12 @@ class TuxSoftwareSuite(Gtk.ApplicationWindow):
         remove = Gtk.Button(label="Uninstall", visible=False, tooltip_text=f"Runs: {remove_cmd}")
         remove.add_css_class("destructive-action")
         remove.connect("clicked", self.on_uninstall, name, remove_cmd)
+        opener = Gtk.Button(label="Open", visible=False, tooltip_text="Launch it")
+        opener.add_css_class("suggested-action")
+        opener.connect("clicked", self.on_open, pkg)
+        self.openers[name] = opener
         actions = Gtk.Box(spacing=6)
+        actions.append(opener)
         actions.append(button)
         actions.append(remove)
         # Download-only entries can't be batch installed, so they get no checkbox.
@@ -663,6 +697,7 @@ class TuxSoftwareSuite(Gtk.ApplicationWindow):
                 button.set_label("Reinstall" if done else "Install")
             button.set_sensitive(not self.busy)
             remove.set_visible(done and uninstall_command(pkg) is not None)
+            self.openers[pkg[0]].set_visible(done and launch_command(pkg) is not None)
             remove.set_sensitive(not self.busy)
             check.set_sensitive(pkg[5] is not None and not self.busy)
         self.update_selection()
@@ -777,6 +812,20 @@ class TuxSoftwareSuite(Gtk.ApplicationWindow):
         buf.insert(buf.get_end_iter(), text)
         self.log.scroll_to_iter(buf.get_end_iter(), 0, False, 0, 0)
         return False
+
+    def on_open(self, _button, pkg):
+        argv = launch_command(pkg)
+        if not argv:
+            self.append(f"\nCan't open {pkg[0]}: it isn't installed or has no launcher. Try Recheck.\n")
+            return
+        env = dict(os.environ, PATH=tool_path())
+        try:
+            # Detached, so closing this panel doesn't close what it opened.
+            subprocess.Popen(argv, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, start_new_session=True)
+            self.append(f"\nOpened {pkg[0]}\n")
+        except OSError as err:
+            self.append(f"\nCouldn't open {pkg[0]}: {err}\n")
 
     def on_copy(self, _button, name, url):
         self.get_clipboard().set(url)
