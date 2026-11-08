@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded tile -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#bg)"/>
+  <rect x="8" y="8" width="112" height="56" rx="26" fill="url(#shine)"/>
+  <!-- Terminal prompt chevron -->
+  <path d="M28 40 L46 54 L28 68" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Download arrow dropping into the tray -->
+  <path d="M78 28 V68" stroke="#fde047" stroke-width="9" stroke-linecap="round"/>
+  <path d="M63 55 L78 70 L93 55" fill="none" stroke="#fde047" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Tray -->
+  <path d="M30 84 V94 a8 8 0 0 0 8 8 H90 a8 8 0 0 0 8 -8 V84" fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
