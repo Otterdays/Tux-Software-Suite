@@ -2,8 +2,10 @@
 # Builds dist/tux-software-suite_<version>_all.deb, a package Ubuntu/Debian users can double-click to install.
 set -euo pipefail
 
-VERSION="1.14.0"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# The version is set once, in the app itself, so the package and the app always agree.
+VERSION="$(sed -n 's/^VERSION = "\(.*\)"$/\1/p' "$HERE/tux_software_suite.py")"
+[ -n "$VERSION" ] || { echo "No VERSION found in tux_software_suite.py" >&2; exit 1; }
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 chmod 755 "$STAGE"
@@ -20,12 +22,12 @@ install -Dm644 /dev/stdin "$STAGE/usr/share/applications/tux-software-suite.desk
 [Desktop Entry]
 Type=Application
 Name=Tux Software Suite
-Comment=Install dev tools one at a time
+Comment=One-click installs for dev tools, AI agents, apps and games
 Exec=tux-software-suite
 Icon=tux-software-suite
 StartupWMClass=local.tuxsoftwaresuite
 Terminal=false
-Categories=Development;
+Categories=Development;System;
 EOF
 
 mkdir -p "$STAGE/DEBIAN"
